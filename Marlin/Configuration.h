@@ -732,7 +732,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 100, 8000 }
+#define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 100, 8000 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -755,7 +755,7 @@
  *   https://reprap.org/forum/read.php?1,739819
  *   http://blog.kyneticcnc.com/2018/10/computing-junction-deviation-for-marlin.html
  */
-#define JUNCTION_DEVIATION
+//#define JUNCTION_DEVIATION
 #if ENABLED(JUNCTION_DEVIATION)
   #define JUNCTION_DEVIATION_MM 0.02  // (mm) Distance from real junction edge
 #endif
@@ -770,8 +770,9 @@
  */
 #if DISABLED(JUNCTION_DEVIATION)
   #define DEFAULT_XJERK 10.0
-  #define DEFAULT_YJERK 10.0
-  #define DEFAULT_ZJERK  0.3
+  #define DEFAULT_XJERK 5.0
+  #define DEFAULT_YJERK 5.0
+  #define DEFAULT_ZJERK 0.3
 #endif
 
 #define DEFAULT_EJERK    5.0  // May be used by Linear Advance
@@ -784,7 +785,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -906,12 +907,12 @@
  *     O-- FRONT --+
  *   (0,0)
  */
-#define X_PROBE_OFFSET_FROM_EXTRUDER 6  // X offset: -left  +right  [of the nozzle]
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 55  // Y offset: -front +behind [the nozzle]
+#define X_PROBE_OFFSET_FROM_EXTRUDER 36  // X offset: -left  +right  [of the nozzle]
+#define Y_PROBE_OFFSET_FROM_EXTRUDER 0  // Y offset: -front +behind [the nozzle]
 #define Z_PROBE_OFFSET_FROM_EXTRUDER -3.20   // Z offset: -below +above  [the nozzle]
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 30
+#define MIN_PROBE_EDGE 45
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED 16000
@@ -1007,7 +1008,7 @@
 // @section machine
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
-#define INVERT_X_DIR false
+#define INVERT_X_DIR true
 #define INVERT_Y_DIR true
 #define INVERT_Z_DIR true
 
@@ -1203,7 +1204,7 @@
   // Set the boundaries for probing (where the probe can reach).
   #define LEFT_PROBE_BED_POSITION MIN_PROBE_EDGE
   #define RIGHT_PROBE_BED_POSITION (X_BED_SIZE - (MIN_PROBE_EDGE))
-  #define FRONT_PROBE_BED_POSITION (Y_PROBE_OFFSET_FROM_EXTRUDER)
+  #define FRONT_PROBE_BED_POSITION (Y_PROBE_OFFSET_FROM_EXTRUDER + MIN_PROBE_EDGE)
   #define BACK_PROBE_BED_POSITION (Y_BED_SIZE - (MIN_PROBE_EDGE) - X_PROBE_OFFSET_FROM_EXTRUDER)
 
   // Probe along the Y axis, advancing X after each column
@@ -1641,7 +1642,7 @@
  *
  * Use CRC checks and retries on the SD communication.
  */
-//#define SD_CHECK_AND_RETRY
+#define SD_CHECK_AND_RETRY
 
 /**
  * LCD Menu Items
@@ -1722,7 +1723,7 @@
 //  M300 S<frequency Hz> P<duration ms>
 //
 #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
-#define LCD_FEEDBACK_FREQUENCY_HZ 5000
+#define LCD_FEEDBACK_FREQUENCY_HZ 2000
 
 //=============================================================================
 //======================== LCD / Controller Selection =========================
