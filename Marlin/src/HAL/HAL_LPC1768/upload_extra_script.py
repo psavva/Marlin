@@ -17,7 +17,7 @@ def print_error(e):
     print('\nUnable to find destination disk (' + e + ')\n' \
           'Please select it in platformio.ini using the upload_port keyword ' \
           '(https://docs.platformio.org/en/latest/projectconf/section_env_upload.html) ' \
-          'or copy the firmware (.pioenvs/' + env.get('PIOENV') + '/firmware.bin) manually to the appropriate disk\n')
+          'or copy the firmware (.pio/build/' + env.get('PIOENV') + '/firmware.bin) manually to the appropriate disk\n')
 
 try:
     if current_OS == 'Windows':
@@ -31,7 +31,7 @@ try:
         #
         import subprocess
         # typical result (string): 'Drives: C:\ D:\ E:\ F:\ G:\ H:\ I:\ J:\ K:\ L:\ M:\ Y:\ Z:\'
-        driveStr = subprocess.check_output("fsutil fsinfo drives")
+        driveStr = subprocess.check_output("fsutil fsinfo drives").decode('utf8')
         # typical result (string): 'C:\ D:\ E:\ F:\ G:\ H:\ I:\ J:\ K:\ L:\ M:\ Y:\ Z:\'
         driveStr = driveStr.strip().lstrip('Drives: ')
         # typical result (array of stings): ['C:\\', 'D:\\', 'E:\\', 'F:\\',
@@ -44,7 +44,7 @@ try:
         for drive in drives:
             final_drive_name = drive.strip().rstrip('\\')   # typical result (string): 'C:'
             try:
-                volume_info = subprocess.check_output('cmd /C dir ' + final_drive_name, stderr=subprocess.STDOUT)
+                volume_info = subprocess.check_output('cmd /C dir ' + final_drive_name, stderr=subprocess.STDOUT).decode('utf8')
             except Exception as e:
                 continue
             else:

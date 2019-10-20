@@ -30,11 +30,11 @@
 #endif
 
 #if MB(MEGATRONICS_32)
-  #define BOARD_NAME "Megatronics v3.2"
+  #define BOARD_INFO_NAME "Megatronics v3.2"
 #elif MB(MEGATRONICS_31)
-  #define BOARD_NAME "Megatronics v3.1"
+  #define BOARD_INFO_NAME "Megatronics v3.1"
 #else
-  #define BOARD_NAME "Megatronics v3.0"
+  #define BOARD_INFO_NAME "Megatronics v3.0"
 #endif
 
 //
@@ -164,7 +164,7 @@
   #define SHIFT_OUT        34
   #define SHIFT_EN         44
 
-  #if MB(MEGATRONICS_31) || MB(MEGATRONICS_32)
+  #if MB(MEGATRONICS_31, MEGATRONICS_32)
     #define SD_DETECT_PIN  56
   #endif
 

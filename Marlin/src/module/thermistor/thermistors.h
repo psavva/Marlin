@@ -122,6 +122,9 @@
 #if ANY_THERMISTOR_IS(75) // beta25 = 4100 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "MGB18-104F39050L32 thermistor"
   #include "thermistor_75.h"
 #endif
+#if ANY_THERMISTOR_IS(99) // 100k bed thermistor with a 10K pull-up resistor (on some Wanhao i3 models)
+  #include "thermistor_99.h"
+#endif
 #if ANY_THERMISTOR_IS(110) // Pt100 with 1k0 pullup
   #include "thermistor_110.h"
 #endif
@@ -130,6 +133,9 @@
 #endif
 #if ANY_THERMISTOR_IS(201) // Pt100 with LMV324 Overlord
   #include "thermistor_201.h"
+#endif
+#if ANY_THERMISTOR_IS(331) // Like table 1, but with 3V3 as input voltage
+  #include "thermistor_331.h"
 #endif
 #if ANY_THERMISTOR_IS(666) // beta25 = UNK, R25 = 200K, Pull-up = 10 kOhm, "Unidentified 200K NTC thermistor (Einstart S)"
   #include "thermistor_666.h"

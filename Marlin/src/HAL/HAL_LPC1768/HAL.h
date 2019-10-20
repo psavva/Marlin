@@ -28,7 +28,7 @@
 
 #define CPU_32_BIT
 
-void HAL_init(void);
+void HAL_init();
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -41,7 +41,7 @@ extern "C" volatile uint32_t _millis;
 #include "../shared/HAL_SPI.h"
 #include "fastio.h"
 #include "watchdog.h"
-#include "HAL_timers.h"
+#include "timers.h"
 #include "MarlinSerial.h"
 
 #include <adc.h>
@@ -113,19 +113,8 @@ extern "C" volatile uint32_t _millis;
 //
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-int freeMemory(void);
+int freeMemory();
 #pragma GCC diagnostic pop
-
-//
-// SPI: Extended functions taking a channel number (Hardware SPI only)
-//
-
-// Write single byte to specified SPI channel
-void spiSend(uint32_t chan, byte b);
-// Write buffer to specified SPI channel
-void spiSend(uint32_t chan, const uint8_t* buf, size_t n);
-// Read single byte from specified SPI channel
-uint8_t spiRec(uint32_t chan);
 
 //
 // ADC API
@@ -155,7 +144,7 @@ int16_t PARSED_PIN_INDEX(const char code, const int16_t dval);
 #define HAL_SENSITIVE_PINS P0_06, P0_07, P0_08, P0_09
 
 #define HAL_IDLETASK 1
-void HAL_idletask(void);
+void HAL_idletask();
 
 #define PLATFORM_M997_SUPPORT
 void flashFirmware(int16_t value);
@@ -175,3 +164,7 @@ void set_pwm_frequency(const pin_t pin, int f_desired);
  *  Optionally allows changing the maximum size of the provided value to enable finer PWM duty control [default = 255]
  */
 void set_pwm_duty(const pin_t pin, const uint16_t v, const uint16_t v_size=255, const bool invert=false);
+
+// Reset source
+void HAL_clear_reset_source(void);
+uint8_t HAL_get_reset_source(void);

@@ -67,20 +67,16 @@
     #if HAS_GRAPHICAL_LCD
       #define SETCURSOR(col, row) lcd_moveto(col * (MENU_FONT_WIDTH), (row + 1) * (MENU_FONT_HEIGHT))
       #define SETCURSOR_RJ(len, row) lcd_moveto(LCD_PIXEL_WIDTH - (len) * (MENU_FONT_WIDTH), (row + 1) * (MENU_FONT_HEIGHT))
-      #define LCDPRINT(p) u8g.print(p)
-      #define LCDWRITE(c) u8g.print(c)
     #else
       #define SETCURSOR(col, row) lcd_moveto(col, row)
       #define SETCURSOR_RJ(len, row) lcd_moveto(LCD_WIDTH - (len), row)
-      #define LCDPRINT(p) lcd_put_u8str(p)
-      #define LCDWRITE(c) lcd_put_wchar(c)
     #endif
 
-    #include "fontutils.h"
+    #include "lcdprint.h"
 
-    void _wrap_string(uint8_t &x, uint8_t &y, const char * const string, read_byte_cb_t cb_read_byte, const bool wordwrap=false);
-    inline void wrap_string_P(uint8_t &x, uint8_t &y, PGM_P const pstr, const bool wordwrap=false) { _wrap_string(x, y, pstr, read_byte_rom, wordwrap); }
-    inline void wrap_string(uint8_t &x, uint8_t &y, const char * const string, const bool wordwrap=false) { _wrap_string(x, y, string, read_byte_ram, wordwrap); }
+    void _wrap_string(uint8_t &col, uint8_t &row, const char * const string, read_byte_cb_t cb_read_byte, const bool wordwrap=false);
+    inline void wrap_string_P(uint8_t &col, uint8_t &row, PGM_P const pstr, const bool wordwrap=false) { _wrap_string(col, row, pstr, read_byte_rom, wordwrap); }
+    inline void wrap_string(uint8_t &col, uint8_t &row, const char * const string, const bool wordwrap=false) { _wrap_string(col, row, string, read_byte_ram, wordwrap); }
 
     #if ENABLED(SDSUPPORT)
       #include "../sd/cardreader.h"
@@ -90,13 +86,12 @@
     typedef void (*menuAction_t)();
 
     // Manual Movement
-    constexpr float manual_feedrate_mm_m[XYZE] = MANUAL_FEEDRATE;
     extern float move_menu_scale;
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
       void lcd_pause_show_message(const PauseMessage message,
-                                           const PauseMode mode=PAUSE_MODE_SAME,
-                                           const uint8_t extruder=active_extruder);
+                                  const PauseMode mode=PAUSE_MODE_SAME,
+                                  const uint8_t extruder=active_extruder);
     #endif
 
     #if ENABLED(AUTO_BED_LEVELING_UBL)
@@ -151,7 +146,7 @@
 
   #define BUTTON_PRESSED(BN) !READ(BTN_## BN)
 
-  #if BUTTON_EXISTS(ENC)
+  #if BUTTON_EXISTS(ENC) || ENABLED(TOUCH_BUTTONS)
     #define BLEN_C 2
     #define EN_C _BV(BLEN_C)
   #endif
@@ -215,7 +210,7 @@
 
 #endif
 
-#if BUTTON_EXISTS(BACK)
+#if BUTTON_EXISTS(BACK) || ENABLED(TOUCH_BUTTONS)
   #define BLEN_D 3
   #define EN_D _BV(BLEN_D)
   #define LCD_BACK_CLICKED() (buttons & EN_D)
@@ -259,15 +254,11 @@ public:
   }
 
   #if HAS_BUZZER
-    static inline void buzz(const long duration, const uint16_t freq) {
-      #if ENABLED(LCD_USE_I2C_BUZZER)
-        lcd.buzz(duration, freq);
-      #elif PIN_EXISTS(BEEPER)
-        buzzer.tone(duration, freq);
-      #elif ENABLED(PCA9632_BUZZER)
-        pca9632_buzz(duration, freq);
-      #endif
-    }
+    static void buzz(const long duration, const uint16_t freq);
+  #endif
+
+  #if ENABLED(LCD_HAS_STATUS_INDICATORS)
+    static void update_indicators();
   #endif
 
   // LCD implementations
@@ -278,7 +269,7 @@ public:
 
     static void init();
     static void update();
-    static void set_alert_status_P(PGM_P message);
+    static void set_alert_status_P(PGM_P const message);
 
     static char status_message[];
     static bool has_status();
@@ -297,18 +288,33 @@ public:
     static void resume_print();
 
     #if HAS_PRINT_PROGRESS
-      #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
-        static uint8_t progress_bar_percent;
-        static void set_progress(const uint8_t progress) { progress_bar_percent = _MIN(progress, 100); }
-        static void set_progress_done() { set_progress(0x80 + 100); }
-        static void progress_reset() { if (progress_bar_percent & 0x80) set_progress(0); }
+      #if HAS_PRINT_PROGRESS_PERMYRIAD
+        typedef uint16_t progress_t;
+        #define PROGRESS_SCALE 100U
+        #define PROGRESS_MASK 0x7FFF
+      #else
+        typedef uint8_t progress_t;
+        #define PROGRESS_SCALE 1U
+        #define PROGRESS_MASK 0x7F
       #endif
-      static uint8_t get_progress();
+      #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
+        static progress_t progress_override;
+        static void set_progress(const progress_t p) { progress_override = _MIN(p, 100U * (PROGRESS_SCALE)); }
+        static void set_progress_done() { progress_override = (PROGRESS_MASK + 1U) + 100U * (PROGRESS_SCALE); }
+        static void progress_reset() { if (progress_override & (PROGRESS_MASK + 1U)) set_progress(0); }
+      #endif
+      static progress_t _get_progress();
+      #if HAS_PRINT_PROGRESS_PERMYRIAD
+        static uint16_t get_progress_permyriad() { return _get_progress(); }
+      #endif
+      static uint8_t get_progress_percent() { return uint8_t(_get_progress() / (PROGRESS_SCALE)); }
     #else
-      static constexpr uint8_t get_progress() { return 0; }
+      static constexpr uint8_t get_progress_percent() { return 0; }
     #endif
 
     #if HAS_SPI_LCD
+
+      static millis_t next_button_update_ms;
 
       static bool detected();
 
@@ -323,7 +329,7 @@ public:
       #endif
 
       #if ENABLED(SHOW_BOOTSCREEN)
-        static void draw_marlin_bootscreen();
+        static void draw_marlin_bootscreen(const bool line2=false);
         static void show_marlin_bootscreen();
         static void show_bootscreen();
       #endif
@@ -344,7 +350,7 @@ public:
           static millis_t progress_bar_ms;  // Start time for the current progress bar cycle
           static void draw_progress_bar(const uint8_t percent);
           #if PROGRESS_MSG_EXPIRE > 0
-            static millis_t MarlinUI::expire_status_ms; // = 0
+            static millis_t expire_status_ms; // = 0
             static inline void reset_progress_bar_timeout() { expire_status_ms = 0; }
           #endif
         #endif
@@ -383,7 +389,7 @@ public:
     #endif
 
     static bool get_blink();
-    static void kill_screen(PGM_P const lcd_msg);
+    static void kill_screen(PGM_P const lcd_error, PGM_P const lcd_component);
     static void draw_kill_screen();
     static void set_status(const char* const message, const bool persist=false);
     static void set_status_P(PGM_P const message, const int8_t level=0);
@@ -395,10 +401,11 @@ public:
     static inline void init() {}
     static inline void update() {}
     static inline void refresh() {}
-    static inline void set_alert_status_P(PGM_P message) { UNUSED(message); }
-    static inline void set_status(const char* const message, const bool persist=false) { UNUSED(message); UNUSED(persist); }
-    static inline void set_status_P(PGM_P const message, const int8_t level=0) { UNUSED(message); UNUSED(level); }
-    static inline void status_printf_P(const uint8_t level, PGM_P const fmt, ...) { UNUSED(level); UNUSED(fmt); }
+    static inline void return_to_status() {}
+    static inline void set_alert_status_P(PGM_P const) {}
+    static inline void set_status(const char* const, const bool=false) {}
+    static inline void set_status_P(PGM_P const, const int8_t=0) {}
+    static inline void status_printf_P(const uint8_t, PGM_P const, ...) {}
     static inline void reset_status() {}
     static inline void reset_alert_level() {}
     static constexpr bool has_status() { return false; }
@@ -406,6 +413,10 @@ public:
   #endif
 
   #if HAS_LCD_MENU
+
+    #if ENABLED(TOUCH_BUTTONS)
+      static uint8_t repeat_delay;
+    #endif
 
     #if ENABLED(ENCODER_RATE_MULTIPLIER)
       static bool encoderRateMultiplierEnabled;
@@ -450,7 +461,18 @@ public:
     static screenFunc_t currentScreen;
     static void goto_screen(const screenFunc_t screen, const uint16_t encoder=0, const uint8_t top=0, const uint8_t items=0);
     static void save_previous_screen();
-    static void goto_previous_screen();
+    static void goto_previous_screen(
+      #if ENABLED(TURBO_BACK_MENU_ITEM)
+        const bool is_back
+      #endif
+    );
+
+    #if ENABLED(TURBO_BACK_MENU_ITEM)
+      // Various menu items require a "void (*)()" to point to
+      // this function so a default argument *won't* work
+      static inline void goto_previous_screen() { goto_previous_screen(false); }
+    #endif
+
     static void return_to_status();
     static inline bool on_status_screen() { return currentScreen == status_screen; }
     static inline void run_current_screen() { (*currentScreen)(); }
@@ -485,7 +507,7 @@ public:
     #endif
 
     #if ENABLED(AUTO_BED_LEVELING_UBL)
-      static void ubl_plot(const uint8_t x, const uint8_t inverted_y);
+      static void ubl_plot(const uint8_t x_plot, const uint8_t y_plot);
     #endif
 
     static void draw_select_screen_prompt(PGM_P const pref, const char * const string=nullptr, PGM_P const suff=nullptr);
@@ -522,10 +544,6 @@ public:
     #if HAS_SLOW_BUTTONS
       static volatile uint8_t slow_buttons;
       static uint8_t read_slow_buttons();
-    #endif
-    #if ENABLED(TOUCH_BUTTONS)
-      static volatile uint8_t touch_buttons;
-      static uint8_t read_touch_buttons();
     #endif
 
     static void update_buttons();
@@ -589,5 +607,8 @@ private:
 
 extern MarlinUI ui;
 
-#define LCD_MESSAGEPGM(x)      ui.set_status_P(PSTR(x))
-#define LCD_ALERTMESSAGEPGM(x) ui.set_alert_status_P(PSTR(x))
+#define LCD_MESSAGEPGM_P(x)      ui.set_status_P(x)
+#define LCD_ALERTMESSAGEPGM_P(x) ui.set_alert_status_P(x)
+
+#define LCD_MESSAGEPGM(x)        LCD_MESSAGEPGM_P(GET_TEXT(x))
+#define LCD_ALERTMESSAGEPGM(x)   LCD_ALERTMESSAGEPGM_P(GET_TEXT(x))

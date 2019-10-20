@@ -40,7 +40,7 @@
   #error "Oops! Make sure you have the LPC1768 environment selected in your IDE."
 #endif
 
-#define BOARD_NAME "Re-ARM RAMPS 1.4"
+#define BOARD_INFO_NAME "Re-ARM RAMPS 1.4"
 
 //
 // Servos
@@ -128,17 +128,33 @@
   // P2_08 E1-Step
   // P2_13 E1-Dir
 
-  #define X_SERIAL_TX_PIN  P2_13
-  #define X_SERIAL_RX_PIN  P2_13
+  #ifndef X_SERIAL_TX_PIN
+    #define X_SERIAL_TX_PIN  P0_01
+  #endif
+  #ifndef X_SERIAL_RX_PIN
+    #define X_SERIAL_RX_PIN  P0_01
+  #endif
 
-  #define Y_SERIAL_TX_PIN  P0_00
-  #define Y_SERIAL_RX_PIN  P0_00
+  #ifndef Y_SERIAL_TX_PIN
+    #define Y_SERIAL_TX_PIN  P0_00
+  #endif
+  #ifndef Y_SERIAL_RX_PIN
+    #define Y_SERIAL_RX_PIN  P0_00
+  #endif
 
-  #define Z_SERIAL_TX_PIN  P0_01
-  #define Z_SERIAL_RX_PIN  P0_01
+  #ifndef Z_SERIAL_TX_PIN
+    #define Z_SERIAL_TX_PIN  P2_13
+  #endif
+  #ifndef Z_SERIAL_RX_PIN
+    #define Z_SERIAL_RX_PIN  P2_13
+  #endif
 
-  #define E0_SERIAL_TX_PIN P2_08
-  #define E0_SERIAL_RX_PIN P2_08
+  #ifndef E0_SERIAL_TX_PIN
+    #define E0_SERIAL_TX_PIN P2_08
+  #endif
+  #ifndef E0_SESIAL_RX_PIN
+    #define E0_SERIAL_RX_PIN P2_08
+  #endif
 
 #endif
 
@@ -225,9 +241,9 @@
 //
 #define LED_PIN            P4_28   // (13)
 
-// define digital pin 4 for the filament runout sensor. Use the RAMPS 1.4 digital input 4 on the servos connector
+// define digital pin 5 for the filament runout sensor. Use the RAMPS 1.4 digital input 5 on the servos connector
 #ifndef FIL_RUNOUT_PIN
-  #define FIL_RUNOUT_PIN   P1_18   // (4)
+  #define FIL_RUNOUT_PIN   P1_19   // (5)
 #endif
 
 #define PS_ON_PIN          P2_12   // (12)
