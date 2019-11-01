@@ -427,6 +427,7 @@ namespace Language_en {
   PROGMEM Language_Str MSG_PAUSE_PRINT                     = _UxGT("Pause Print");
   PROGMEM Language_Str MSG_RESUME_PRINT                    = _UxGT("Resume Print");
   PROGMEM Language_Str MSG_STOP_PRINT                      = _UxGT("Stop Print");
+  PROGMEM Language_Str MSG_PRINTING_OBJECT                 = _UxGT("Printing Object");
   PROGMEM Language_Str MSG_CANCEL_OBJECT                   = _UxGT("Cancel Object");
   PROGMEM Language_Str MSG_OUTAGE_RECOVERY                 = _UxGT("Outage Recovery");
   PROGMEM Language_Str MSG_MEDIA_MENU                      = _UxGT("Print from Media");
@@ -708,3 +709,11 @@ namespace Language_en {
   PROGMEM Language_Str MSG_BACKLASH_CORRECTION             = _UxGT("Correction");
   PROGMEM Language_Str MSG_BACKLASH_SMOOTHING              = _UxGT("Smoothing");
 }
+
+#if FAN_COUNT == 1
+  #define MSG_FIRST_FAN_SPEED       MSG_FAN_SPEED
+  #define MSG_FIRST_EXTRA_FAN_SPEED MSG_EXTRA_FAN_SPEED
+#else
+  #define MSG_FIRST_FAN_SPEED       MSG_FAN_SPEED_1
+  #define MSG_FIRST_EXTRA_FAN_SPEED MSG_EXTRA_FAN_SPEED_1
+#endif
