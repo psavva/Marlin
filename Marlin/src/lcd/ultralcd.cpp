@@ -59,6 +59,9 @@
 
 #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
   MarlinUI::progress_t MarlinUI::progress_override; // = 0
+  #if BOTH(LCD_SET_PROGRESS_MANUALLY, USE_M73_REMAINING_TIME)
+    uint32_t MarlinUI::remaining_time;
+  #endif
 #endif
 
 #if ENABLED(PCA9632_BUZZER) || USE_BEEPER
@@ -179,6 +182,7 @@ millis_t MarlinUI::next_button_update_ms; // = 0
   #endif
 
   screenFunc_t MarlinUI::currentScreen; // Initialized in CTOR
+  bool MarlinUI::screen_changed;
 
   #if ENABLED(ENCODER_RATE_MULTIPLIER)
     bool MarlinUI::encoderRateMultiplierEnabled;
