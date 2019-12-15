@@ -72,7 +72,7 @@ namespace Language_it {
   PROGMEM Language_Str MSG_HOME_OFFSETS_APPLIED            = _UxGT("Offset applicato");
   PROGMEM Language_Str MSG_SET_ORIGIN                      = _UxGT("Imposta Origine");
   PROGMEM Language_Str MSG_PREHEAT_1                       = _UxGT("Preriscalda ") PREHEAT_1_LABEL;
-  PROGMEM Language_Str MSG_PREHEAT_1_HN                    = _UxGT("Preriscalda ") PREHEAT_1_LABEL " ~";
+  PROGMEM Language_Str MSG_PREHEAT_1_H                     = _UxGT("Preriscalda ") PREHEAT_1_LABEL " ~";
   PROGMEM Language_Str MSG_PREHEAT_1_END                   = _UxGT("Preris.") PREHEAT_1_LABEL _UxGT(" Ugello");
   PROGMEM Language_Str MSG_PREHEAT_1_END_E                 = _UxGT("Preris.") PREHEAT_1_LABEL _UxGT(" Ugello ~");
   PROGMEM Language_Str MSG_PREHEAT_1_ALL                   = _UxGT("Preris.") PREHEAT_1_LABEL _UxGT(" Tutto");
@@ -239,10 +239,11 @@ namespace Language_it {
   PROGMEM Language_Str MSG_NOZZLE_N                        = _UxGT("Ugello ~");
   PROGMEM Language_Str MSG_BED                             = _UxGT("Piatto");
   PROGMEM Language_Str MSG_CHAMBER                         = _UxGT("Camera");
-  PROGMEM Language_Str MSG_FAN_SPEED                       = _UxGT("Vel. ventola"); // Max 15 characters
-  PROGMEM Language_Str MSG_FAN_SPEED_N                     = _UxGT("Vel. ventola ="); // Max 15 characters
-  PROGMEM Language_Str MSG_EXTRA_FAN_SPEED                 = _UxGT("Extra vel.vent."); // Max 15 characters
-  PROGMEM Language_Str MSG_EXTRA_FAN_SPEED_N               = _UxGT("Extra v.vent. ="); // Max 15 characters
+  PROGMEM Language_Str MSG_FAN_SPEED                       = _UxGT("Vel. ventola");     // Max 15 characters
+  PROGMEM Language_Str MSG_FAN_SPEED_N                     = _UxGT("Vel. ventola =");   // Max 15 characters
+  PROGMEM Language_Str MSG_STORED_FAN_N                    = _UxGT("Ventola mem. =");   // Max 15 characters
+  PROGMEM Language_Str MSG_EXTRA_FAN_SPEED                 = _UxGT("Extra vel.vent.");  // Max 15 characters
+  PROGMEM Language_Str MSG_EXTRA_FAN_SPEED_N               = _UxGT("Extra v.vent. =");  // Max 15 characters
   PROGMEM Language_Str MSG_FLOW                            = _UxGT("Flusso");
   PROGMEM Language_Str MSG_FLOW_N                          = _UxGT("Flusso ~");
   PROGMEM Language_Str MSG_CONTROL                         = _UxGT("Controllo");
@@ -322,10 +323,14 @@ namespace Language_it {
   PROGMEM Language_Str MSG_BUTTON_RESET                    = _UxGT("Resetta");
   PROGMEM Language_Str MSG_BUTTON_CANCEL                   = _UxGT("Annulla");
   PROGMEM Language_Str MSG_BUTTON_DONE                     = _UxGT("Fatto");
+  PROGMEM Language_Str MSG_BUTTON_BACK                     = _UxGT("Indietro");
+  PROGMEM Language_Str MSG_BUTTON_PROCEED                  = _UxGT("Procedi");
   PROGMEM Language_Str MSG_PAUSE_PRINT                     = _UxGT("Pausa stampa");
   PROGMEM Language_Str MSG_RESUME_PRINT                    = _UxGT("Riprendi stampa");
   PROGMEM Language_Str MSG_STOP_PRINT                      = _UxGT("Arresta stampa");
+  PROGMEM Language_Str MSG_PRINTING_OBJECT                 = _UxGT("Stampa Oggetto");
   PROGMEM Language_Str MSG_CANCEL_OBJECT                   = _UxGT("Cancella Oggetto");
+  PROGMEM Language_Str MSG_CANCEL_OBJECT_N                 = _UxGT("Canc. Oggetto =");
   PROGMEM Language_Str MSG_OUTAGE_RECOVERY                 = _UxGT("Ripresa da PowerLoss");
   PROGMEM Language_Str MSG_MEDIA_MENU                      = _UxGT("Stampa da media");
   PROGMEM Language_Str MSG_NO_MEDIA                        = _UxGT("Media non presente");
@@ -463,7 +468,10 @@ namespace Language_it {
   PROGMEM Language_Str MSG_INFO_MAX_TEMP                   = _UxGT("Temp max");
   PROGMEM Language_Str MSG_INFO_PSU                        = _UxGT("Alimentatore");
   PROGMEM Language_Str MSG_DRIVE_STRENGTH                  = _UxGT("Potenza Drive");
-  PROGMEM Language_Str MSG_DAC_PERCENT                     = _UxGT("Driver %");
+  PROGMEM Language_Str MSG_DAC_PERCENT_X                   = _UxGT("X Driver %");
+  PROGMEM Language_Str MSG_DAC_PERCENT_Y                   = _UxGT("Y Driver %");
+  PROGMEM Language_Str MSG_DAC_PERCENT_Z                   = _UxGT("Z Driver %");
+  PROGMEM Language_Str MSG_DAC_PERCENT_E                   = _UxGT("E Driver %");
   PROGMEM Language_Str MSG_ERROR_TMC                       = _UxGT("ERR.CONNESSIONE TMC");
   PROGMEM Language_Str MSG_DAC_EEPROM_WRITE                = _UxGT("Scrivi DAC EEPROM");
   PROGMEM Language_Str MSG_FILAMENT_CHANGE_HEADER          = _UxGT("CAMBIO FILAMENTO");
