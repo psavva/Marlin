@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -166,7 +166,15 @@
 //
 #define HEATER_BED_PIN     P2_05
 #define HEATER_0_PIN       P2_07
-#define HEATER_1_PIN       P2_06
+#if HOTENDS == 1
+  #ifndef FAN1_PIN
+    #define FAN1_PIN       P2_06
+  #endif
+#else
+  #ifndef HEATER_1_PIN
+    #define HEATER_1_PIN   P2_06
+  #endif
+#endif
 #ifndef FAN_PIN
   #define FAN_PIN          P2_04
 #endif
@@ -208,7 +216,6 @@
     #define BTN_EN2        P3_26
 
     #define LCD_SDSS       P0_28
-    #define SD_DETECT_PIN  P0_27
 
     #if ENABLED(MKS_12864OLED_SSD1306)
 
@@ -284,17 +291,16 @@
 
 #define ONBOARD_SD_CS_PIN  P0_06   // Chip select for "System" SD card
 
-#if SD_CONNECTION_IS(LCD)
-  #define SCK_PIN          P0_07
-  #define MISO_PIN         P0_08
-  #define MOSI_PIN         P0_09
-  #define SS_PIN           P0_28
-#elif SD_CONNECTION_IS(ONBOARD)
+#if SD_CONNECTION_IS(LCD) || SD_CONNECTION_IS(ONBOARD)
   #define SD_DETECT_PIN    P0_27
   #define SCK_PIN          P0_07
   #define MISO_PIN         P0_08
   #define MOSI_PIN         P0_09
-  #define SS_PIN           ONBOARD_SD_CS_PIN
+  #if SD_CONNECTION_IS(ONBOARD)
+    #define SS_PIN         ONBOARD_SD_CS_PIN
+  #else
+    #define SS_PIN         P0_28
+  #endif
 #elif SD_CONNECTION_IS(CUSTOM_CABLE)
   #error "No custom SD drive cable defined for this board."
 #endif
