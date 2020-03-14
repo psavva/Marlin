@@ -101,7 +101,7 @@
 #endif
 
 #if ENABLED(POWER_LOSS_RECOVERY)
-  #include "../feature/power_loss_recovery.h"
+  #include "../feature/powerloss.h"
 #endif
 
 #if HAS_CUTTER
@@ -1408,7 +1408,7 @@ void Planner::check_axes_activity() {
    * The multiplier converts a given E value into a length.
    */
   void Planner::calculate_volumetric_multipliers() {
-    for (uint8_t i = 0; i < COUNT(filament_size); i++) {
+    LOOP_L_N(i, COUNT(filament_size)) {
       volumetric_multiplier[i] = calculate_volumetric_multiplier(filament_size[i]);
       refresh_e_factor(i);
     }
@@ -1748,7 +1748,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
             position_float.e = target_float.e;
           #endif
           de = 0; // no difference
-          SERIAL_ECHO_MSG(MSG_ERR_COLD_EXTRUDE_STOP);
+          SERIAL_ECHO_MSG(STR_ERR_COLD_EXTRUDE_STOP);
         }
       #endif // PREVENT_COLD_EXTRUSION
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
@@ -1770,7 +1770,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
               position_float.e = target_float.e;
             #endif
             de = 0; // no difference
-            SERIAL_ECHO_MSG(MSG_ERR_LONG_EXTRUDE_STOP);
+            SERIAL_ECHO_MSG(STR_ERR_LONG_EXTRUDE_STOP);
           }
         }
       #endif // PREVENT_LENGTHY_EXTRUDE
@@ -1991,7 +1991,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
 
       #if ENABLED(DISABLE_INACTIVE_EXTRUDER) // Enable only the selected extruder
 
-        for (uint8_t i = 0; i < EXTRUDERS; i++)
+        LOOP_L_N(i, EXTRUDERS)
           if (g_uc_extruder_last_move[i] > 0) g_uc_extruder_last_move[i]--;
 
         #if HAS_DUPLICATION_MODE
@@ -2390,6 +2390,12 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     // Start with a safe speed (from which the machine may halt to stop immediately).
     float safe_speed = nominal_speed;
 
+    #ifdef TRAVEL_EXTRA_XYJERK
+      const float extra_xyjerk = (de <= 0) ? TRAVEL_EXTRA_XYJERK : 0;
+    #else
+      constexpr float extra_xyjerk = 0;
+    #endif
+
     uint8_t limited = 0;
     #if HAS_LINEAR_E_JERK
       LOOP_XYZ(i)
@@ -2398,7 +2404,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     #endif
     {
       const float jerk = ABS(current_speed[i]),   // cs : Starting from zero, change in speed for this axis
-                  maxj = max_jerk[i];             // mj : The max jerk setting for this axis
+                  maxj = (max_jerk[i] + (i == X_AXIS || i == Y_AXIS ? extra_xyjerk : 0.0f)); // mj : The max jerk setting for this axis
       if (jerk > maxj) {                          // cs > mj : New current speed too fast?
         if (limited) {                            // limited already?
           const float mjerk = nominal_speed * maxj; // ns*mj
@@ -2450,8 +2456,10 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
             : // v_exit <= v_entry                coasting             axis reversal
               ( (v_entry < 0 || v_exit > 0) ? (v_entry - v_exit) : _MAX(-v_exit, v_entry) );
 
-        if (jerk > max_jerk[axis]) {
-          v_factor *= max_jerk[axis] / jerk;
+        const float maxj = (max_jerk[axis] + (axis == X_AXIS || axis == Y_AXIS ? extra_xyjerk : 0.0f));
+
+        if (jerk > maxj) {
+          v_factor *= maxj / jerk;
           ++limited;
         }
       }
@@ -2611,21 +2619,24 @@ bool Planner::buffer_segment(const float &a, const float &b, const float &c, con
       SERIAL_ECHOPAIR("->", target.a);
       SERIAL_ECHOPAIR(") B:", b);
     #else
-      SERIAL_ECHOPAIR(" X:", a);
+      SERIAL_ECHOPAIR_P(SP_X_LBL, a);
       SERIAL_ECHOPAIR(" (", position.x);
       SERIAL_ECHOPAIR("->", target.x);
-      SERIAL_ECHOPAIR(") Y:", b);
+      SERIAL_CHAR(')');
+      SERIAL_ECHOPAIR_P(SP_Y_LBL, b);
     #endif
     SERIAL_ECHOPAIR(" (", position.y);
     SERIAL_ECHOPAIR("->", target.y);
     #if ENABLED(DELTA)
       SERIAL_ECHOPAIR(") C:", c);
     #else
-      SERIAL_ECHOPAIR(") Z:", c);
+      SERIAL_CHAR(')');
+      SERIAL_ECHOPAIR_P(SP_Z_LBL, c);
     #endif
     SERIAL_ECHOPAIR(" (", position.z);
     SERIAL_ECHOPAIR("->", target.z);
-    SERIAL_ECHOPAIR(") E:", e);
+    SERIAL_CHAR(')');
+    SERIAL_ECHOPAIR_P(SP_E_LBL, e);
     SERIAL_ECHOPAIR(" (", position.e);
     SERIAL_ECHOPAIR("->", target.e);
     SERIAL_ECHOLNPGM(")");

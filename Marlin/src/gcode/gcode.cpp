@@ -46,7 +46,7 @@ GcodeSuite gcode;
 
 #if ENABLED(POWER_LOSS_RECOVERY)
   #include "../sd/cardreader.h"
-  #include "../feature/power_loss_recovery.h"
+  #include "../feature/powerloss.h"
 #endif
 
 #if ENABLED(CANCEL_OBJECTS)
@@ -94,7 +94,7 @@ int8_t GcodeSuite::get_target_extruder_from_command() {
     if (e < EXTRUDERS) return e;
     SERIAL_ECHO_START();
     SERIAL_CHAR('M'); SERIAL_ECHO(parser.codenum);
-    SERIAL_ECHOLNPAIR(" " MSG_INVALID_EXTRUDER " ", int(e));
+    SERIAL_ECHOLNPAIR(" " STR_INVALID_EXTRUDER " ", int(e));
     return -1;
   }
   return active_extruder;
@@ -111,9 +111,9 @@ int8_t GcodeSuite::get_target_e_stepper_from_command() {
   SERIAL_ECHO_START();
   SERIAL_CHAR('M'); SERIAL_ECHO(parser.codenum);
   if (e == -1)
-    SERIAL_ECHOLNPGM(" " MSG_E_STEPPER_NOT_SPECIFIED);
+    SERIAL_ECHOLNPGM(" " STR_E_STEPPER_NOT_SPECIFIED);
   else
-    SERIAL_ECHOLNPAIR(" " MSG_INVALID_E_STEPPER " ", int(e));
+    SERIAL_ECHOLNPAIR(" " STR_INVALID_E_STEPPER " ", int(e));
   return -1;
 }
 
@@ -135,7 +135,7 @@ void GcodeSuite::get_destination_from_command() {
 
   // Get new XYZ position, whether absolute or relative
   LOOP_XYZ(i) {
-    if ( (seen[i] = parser.seenval(axis_codes[i])) ) {
+    if ( (seen[i] = parser.seenval(XYZ_CHAR(i))) ) {
       const float v = parser.value_axis_units((AxisEnum)i);
       if (skip_move)
         destination[i] = current_position[i];
@@ -277,7 +277,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 27: G27(); break;                                    // G27: Nozzle Park
       #endif
 
-      case 28: G28(false); break;                                 // G28: Home all axes, one at a time
+      case 28: G28(); break;                                      // G28: Home one or more axes
 
       #if HAS_LEVELING
         case 29:                                                  // G29: Bed leveling calibration
@@ -785,7 +785,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         #endif
       #endif
 
-      #if HAS_TRINAMIC
+      #if HAS_TRINAMIC_CONFIG
         case 122: M122(); break;                                  // M122: Report driver configuration and status
         case 906: M906(); break;                                  // M906: Set motor current in milliamps using axis codes X, Y, Z, E
         #if HAS_STEALTHCHOP
@@ -930,6 +930,7 @@ void GcodeSuite::process_subcommands_now(char * gcode) {
     char * const delim = strchr(gcode, '\n');         // Get address of next newline
     if (delim) *delim = '\0';                         // Replace with nul
     parser.parse(gcode);                              // Parse the current command
+    if (delim) *delim = '\n';                         // Put back the newline
     process_parsed_command(true);                     // Process it
     if (!delim) break;                                // Last command?
     gcode = delim + 1;                                // Get the next command
@@ -951,13 +952,13 @@ void GcodeSuite::process_subcommands_now(char * gcode) {
       switch (busy_state) {
         case IN_HANDLER:
         case IN_PROCESS:
-          SERIAL_ECHO_MSG(MSG_BUSY_PROCESSING);
+          SERIAL_ECHO_MSG(STR_BUSY_PROCESSING);
           break;
         case PAUSED_FOR_USER:
-          SERIAL_ECHO_MSG(MSG_BUSY_PAUSED_FOR_USER);
+          SERIAL_ECHO_MSG(STR_BUSY_PAUSED_FOR_USER);
           break;
         case PAUSED_FOR_INPUT:
-          SERIAL_ECHO_MSG(MSG_BUSY_PAUSED_FOR_INPUT);
+          SERIAL_ECHO_MSG(STR_BUSY_PAUSED_FOR_INPUT);
           break;
         default:
           break;
