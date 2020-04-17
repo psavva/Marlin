@@ -329,28 +329,45 @@ class Stepper {
       static bool LA_use_advance_lead;
     #endif
 
+    #if ENABLED(INTEGRATED_BABYSTEPPING)
+      static constexpr uint32_t BABYSTEP_NEVER = 0xFFFFFFFF;
+      static uint32_t nextBabystepISR;
+    #endif
+
     static int32_t ticks_nominal;
     #if DISABLED(S_CURVE_ACCELERATION)
       static uint32_t acc_step_rate; // needed for deceleration start point
     #endif
 
-    //
     // Exact steps at which an endstop was triggered
-    //
     static xyz_long_t endstops_trigsteps;
 
-    //
     // Positions of stepper motors, in step units
-    //
     static xyze_long_t count_position;
 
-    //
-    // Current direction of stepper motors (+1 or -1)
-    //
+    // Current stepper motor directions (+1 or -1)
     static xyze_int8_t count_direction;
 
-  public:
+    #if ENABLED(LASER_POWER_INLINE_TRAPEZOID)
 
+      typedef struct {
+        bool trap_en;       // Trapezoid needed flag (i.e., laser on, planner in control)
+        uint8_t cur_power;  // Current laser power
+        bool cruise_set;    // Power set up for cruising?
+
+        #if DISABLED(LASER_POWER_INLINE_TRAPEZOID_CONT)
+          uint32_t last_step_count, // Step count from the last update
+                   acc_step_count;  // Bresenham counter for laser accel/decel
+        #else
+          uint16_t till_update;     // Countdown to the next update
+        #endif
+      } stepper_laser_t;
+
+      static stepper_laser_t laser;
+
+    #endif
+
+  public:
     // Initialize stepper hardware
     static void init();
 
@@ -383,6 +400,17 @@ class Stepper {
       FORCE_INLINE static void initiateLA() { nextAdvanceISR = 0; }
     #endif
 
+    #if ENABLED(INTEGRATED_BABYSTEPPING)
+      // The Babystepping ISR phase
+      static uint32_t babystepping_isr();
+      FORCE_INLINE static void initiateBabystepping() {
+        if (nextBabystepISR == BABYSTEP_NEVER) {
+          nextBabystepISR = 0;
+          wake_up();
+        }
+      }
+    #endif
+
     // Check if the given block is busy or not - Must not be called from ISR contexts
     static bool is_block_busy(const block_t* const block);
 
@@ -395,6 +423,7 @@ class Stepper {
     static void set_axis_position(const AxisEnum a, const int32_t &v);
 
     // Report the positions of the steppers, in steps
+    static void report_a_position(const xyz_long_t &pos);
     static void report_positions();
 
     // Quickly stop all steppers
@@ -455,7 +484,7 @@ class Stepper {
     #endif
 
     #if ENABLED(BABYSTEPPING)
-      static void babystep(const AxisEnum axis, const bool direction); // perform a short step with a single stepper motor, outside of any convention
+      static void do_babystep(const AxisEnum axis, const bool direction); // perform a short step with a single stepper motor, outside of any convention
     #endif
 
     #if HAS_MOTOR_CURRENT_PWM
