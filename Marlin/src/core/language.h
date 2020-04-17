@@ -39,7 +39,7 @@
 //
 //   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRA_LCD" / "SDSUPPORT" #define IN "Configuration.h"
 //   ==> ALSO TRY ALL AVAILABLE LANGUAGE OPTIONS
-// See also http://marlinfw.org/docs/development/lcd_language.html
+// See also https://marlinfw.org/docs/development/lcd_language.html
 
 // Languages
 // an         Aragonese
@@ -57,6 +57,7 @@
 // fr         French
 // gl         Galician
 // hr         Croatian
+// hu         Hungarian
 // it         Italian
 // jp_kana    Japanese
 // ko_KR      Korean (South Korea)
