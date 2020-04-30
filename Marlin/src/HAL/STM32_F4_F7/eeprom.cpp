@@ -20,16 +20,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 #if defined(STM32GENERIC) && (defined(STM32F4) || defined(STM32F7))
 
-#include "../../inc/MarlinConfigPre.h"
+#include "../../inc/MarlinConfig.h"
 
 #if ENABLED(EEPROM_SETTINGS)
 
+#include "../shared/eeprom_if.h"
 #include "../shared/eeprom_api.h"
 
-bool PersistentStore::access_start() { return true; }
+size_t PersistentStore::capacity()    { return E2END + 1; }
+bool PersistentStore::access_start()  { return true; }
 bool PersistentStore::access_finish() { return true; }
 
 bool PersistentStore::write_data(int &pos, const uint8_t *value, size_t size, uint16_t *crc) {
@@ -62,8 +63,6 @@ bool PersistentStore::read_data(int &pos, uint8_t* value, size_t size, uint16_t 
   } while (--size);
   return false;
 }
-
-size_t PersistentStore::capacity() { return E2END + 1; }
 
 #endif // EEPROM_SETTINGS
 #endif // STM32GENERIC && (STM32F4 || STM32F7)

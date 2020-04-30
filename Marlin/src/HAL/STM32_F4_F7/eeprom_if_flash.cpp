@@ -16,12 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 #if defined(STM32GENERIC) && (defined(STM32F4) || defined(STM32F7))
 
 /**
- * Description: Functions for a Flash emulated EEPROM
- * Not platform dependent.
+ * Arduino-style interface for Flash emulated EEPROM
  */
 
 // Include configs and pins to get all EEPROM flags
@@ -35,6 +33,7 @@
 
 #include "HAL.h"
 #include "eeprom_emul.h"
+#include "../shared/eeprom_if.h"
 
 // ------------------------
 // Local defines
@@ -80,7 +79,7 @@ void eeprom_write_byte(uint8_t *pos, unsigned char value) {
   HAL_FLASH_Unlock();
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
 
-  uint16_t eeprom_address = unsigned(pos);
+  const unsigned eeprom_address = (unsigned)pos;
   if (EE_WriteVariable(eeprom_address, uint16_t(value)) != EE_OK)
     for (;;) HAL_Delay(1); // Spin forever until watchdog reset
 
@@ -91,7 +90,7 @@ uint8_t eeprom_read_byte(uint8_t *pos) {
   eeprom_init();
 
   uint16_t data = 0xFF;
-  uint16_t eeprom_address = unsigned(pos);
+  const unsigned eeprom_address = (unsigned)pos;
   (void)EE_ReadVariable(eeprom_address, &data); // Data unchanged on error
 
   return uint8_t(data);
@@ -101,7 +100,7 @@ void eeprom_read_block(void *__dst, const void *__src, size_t __n) {
   eeprom_init();
 
   uint16_t data = 0xFF;
-  uint16_t eeprom_address = unsigned(__src);
+  const unsigned eeprom_address = (unsigned)__src;
   LOOP_L_N(c, __n) {
     EE_ReadVariable(eeprom_address+c, &data);
     *((uint8_t*)__dst + c) = data;

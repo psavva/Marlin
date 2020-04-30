@@ -21,19 +21,24 @@
  */
 
 /**
- * Description: functions for SPI connected external EEPROM.
- * Not platform dependent.
+ * Platform-independent Arduino functions for SPI EEPROM.
+ * Enable USE_SHARED_EEPROM if not supplied by the framework.
  */
 
 #include "../../inc/MarlinConfig.h"
 
-#if ENABLED(SPI_EEPROM)
+#if BOTH(USE_SHARED_EEPROM, SPI_EEPROM)
 
 #include "../HAL.h"
+#include "eeprom_if.h"
 
 #define CMD_WREN  6   // WREN
 #define CMD_READ  2   // WRITE
 #define CMD_WRITE 2   // WRITE
+
+#ifndef EEPROM_WRITE_DELAY
+  #define EEPROM_WRITE_DELAY    7
+#endif
 
 uint8_t eeprom_read_byte(uint8_t* pos) {
   uint8_t v;
@@ -90,7 +95,7 @@ void eeprom_write_byte(uint8_t* pos, uint8_t value) {
 
   spiSend(SPI_CHAN_EEPROM1, value);
   WRITE(SPI_EEPROM1_CS, HIGH);
-  delay(7);   // wait for page write to complete
+  delay(EEPROM_WRITE_DELAY);   // wait for page write to complete
 }
 
 void eeprom_update_block(const void* src, void* eeprom_address, size_t n) {
@@ -112,7 +117,7 @@ void eeprom_update_block(const void* src, void* eeprom_address, size_t n) {
 
   spiSend(SPI_CHAN_EEPROM1, (const uint8_t*)src, n);
   WRITE(SPI_EEPROM1_CS, HIGH);
-  delay(7);   // wait for page write to complete
+  delay(EEPROM_WRITE_DELAY);   // wait for page write to complete
 }
 
-#endif // SPI_EEPROM
+#endif // USE_SHARED_EEPROM && I2C_EEPROM

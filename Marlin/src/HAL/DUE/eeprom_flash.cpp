@@ -22,25 +22,26 @@
  */
 #ifdef ARDUINO_ARCH_SAM
 
-#include "../../inc/MarlinConfigPre.h"
+#include "../../inc/MarlinConfig.h"
 
-#if ENABLED(EEPROM_SETTINGS)
+#if ENABLED(FLASH_EEPROM_EMULATION)
 
 #include "../../inc/MarlinConfig.h"
+
+#include "../shared/eeprom_if.h"
 #include "../shared/eeprom_api.h"
 
-#if !defined(E2END) && ENABLED(FLASH_EEPROM_EMULATION)
+#if !defined(E2END)
   #define E2END 0xFFF // Default to Flash emulated EEPROM size (EepromEmulation_Due.cpp)
 #endif
 
 extern void eeprom_flush();
 
-bool PersistentStore::access_start() { return true; }
+size_t PersistentStore::capacity()    { return E2END + 1; }
+bool PersistentStore::access_start()  { return true; }
 
 bool PersistentStore::access_finish() {
-  #if ENABLED(FLASH_EEPROM_EMULATION)
-    eeprom_flush();
-  #endif
+  eeprom_flush();
   return true;
 }
 
@@ -75,8 +76,6 @@ bool PersistentStore::read_data(int &pos, uint8_t* value, size_t size, uint16_t 
   } while (--size);
   return false;
 }
-
-size_t PersistentStore::capacity() { return E2END + 1; }
 
 #endif // EEPROM_SETTINGS
 #endif // ARDUINO_ARCH_SAM
