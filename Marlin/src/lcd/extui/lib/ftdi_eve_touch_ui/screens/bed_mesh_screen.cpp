@@ -16,12 +16,12 @@
  *   GNU General Public License for more details.                           *
  *                                                                          *
  *   To view a copy of the GNU General Public License, go to the following  *
- *   location: <http://www.gnu.org/licenses/>.                              *
+ *   location: <https://www.gnu.org/licenses/>.                              *
  ****************************************************************************/
 
 #include "../config.h"
 
-#if ENABLED(TOUCH_UI_FTDI_EVE) && HAS_MESH
+#if BOTH(TOUCH_UI_FTDI_EVE, HAS_MESH)
 
 #include "screens.h"
 #include "screen_data.h"
@@ -35,19 +35,19 @@ using namespace ExtUI;
   #define GRID_ROWS 10
 
   #define MESH_POS    BTN_POS(1, 2), BTN_SIZE(2,5)
+  #define MESSAGE_POS BTN_POS(1, 7), BTN_SIZE(2,1)
   #define Z_LABEL_POS BTN_POS(1, 8), BTN_SIZE(1,1)
   #define Z_VALUE_POS BTN_POS(2, 8), BTN_SIZE(1,1)
-  #define WAIT_POS    BTN_POS(1, 8), BTN_SIZE(2,1)
-  #define BACK_POS    BTN_POS(1,10), BTN_SIZE(2,1)
+  #define OKAY_POS    BTN_POS(1,10), BTN_SIZE(2,1)
 #else
   #define GRID_COLS 5
   #define GRID_ROWS 5
 
-  #define MESH_POS       BTN_POS(1,1), BTN_SIZE(3,5)
-  #define Z_LABEL_POS    BTN_POS(4,2), BTN_SIZE(2,1)
-  #define Z_VALUE_POS    BTN_POS(4,3), BTN_SIZE(2,1)
-  #define WAIT_POS       BTN_POS(4,2), BTN_SIZE(2,2)
-  #define BACK_POS       BTN_POS(4,5), BTN_SIZE(2,1)
+  #define MESH_POS    BTN_POS(1,1), BTN_SIZE(3,5)
+  #define MESSAGE_POS BTN_POS(4,1), BTN_SIZE(2,1)
+  #define Z_LABEL_POS BTN_POS(4,2), BTN_SIZE(2,1)
+  #define Z_VALUE_POS BTN_POS(4,3), BTN_SIZE(2,1)
+  #define OKAY_POS    BTN_POS(4,5), BTN_SIZE(2,1)
 #endif
 
 void BedMeshScreen::drawMesh(int16_t x, int16_t y, int16_t w, int16_t h, ExtUI::bed_mesh_t data, uint8_t opts, float autoscale_max) {
@@ -88,7 +88,15 @@ void BedMeshScreen::drawMesh(int16_t x, int16_t y, int16_t w, int16_t h, ExtUI::
 
   const float scale_z = ((val_max == val_min) ? 1 : 1/(val_max - val_min)) * autoscale_max;
 
-  // These equations determine the appearance of the grid on the screen.
+  /**
+   * The 3D points go through a 3D graphics pipeline to determine the final 2D point on the screen.
+   * This is written out as a stack of macros that each apply an affine transformation to the point.
+   * At compile time, the compiler should be able to reduce these expressions.
+   *
+   * The last transformation in the chain (TRANSFORM_5) is initially set to a no-op so we can measure
+   * the dimensions of the grid, but is later replaced with a scaling transform that scales the grid
+   * to fit.
+   */
 
   #define TRANSFORM_5(X,Y,Z)  (X), (Y)                                                                   // No transform
   #define TRANSFORM_4(X,Y,Z)  TRANSFORM_5((X)/(Z),(Y)/-(Z), 0)                                           // Perspective
@@ -119,8 +127,12 @@ void BedMeshScreen::drawMesh(int16_t x, int16_t y, int16_t w, int16_t h, ExtUI::
   const float center_x         = x + w/2;
   const float center_y         = y + h/2;
 
+  // Now replace the last transformation in the chain with a scaling operation.
+
   #undef  TRANSFORM_5
-  #define TRANSFORM_5(X,Y,Z)  center_x + (X - grid_cx) * scale_x, center_y + (Y - grid_cy) * scale_y      // Fit to bounds
+  #define TRANSFORM_6(X,Y,Z)  (X)*16, (Y)*16                                                  // Scale to 1/16 pixel units
+  #define TRANSFORM_5(X,Y,Z)  TRANSFORM_6( center_x + ((X) - grid_cx) * scale_x, \
+                                           center_y + ((Y) - grid_cy) * scale_y, 0)           // Scale to bounds
 
   // Draw the grid
 
@@ -128,7 +140,6 @@ void BedMeshScreen::drawMesh(int16_t x, int16_t y, int16_t w, int16_t h, ExtUI::
 
   CommandProcessor cmd;
   cmd.cmd(SAVE_CONTEXT())
-     .cmd(VERTEX_FORMAT(0))
      .cmd(TAG_MASK(false))
      .cmd(SAVE_CONTEXT());
 
@@ -238,7 +249,7 @@ void BedMeshScreen::drawHighlightedPointValue() {
      .text(Z_LABEL_POS, GET_TEXT_F(MSG_MESH_EDIT_Z))
      .text(Z_VALUE_POS, str)
      .colors(action_btn)
-     .tag(1).button( BACK_POS, GET_TEXT_F(MSG_BACK))
+     .tag(1).button( OKAY_POS, GET_TEXT_F(MSG_BUTTON_OKAY))
      .tag(0);
 }
 
@@ -261,7 +272,12 @@ void BedMeshScreen::onRedraw(draw_mode_t what) {
     constexpr float autoscale_max_amplitude = 0.03;
     const bool levelingFinished = screen_data.BedMeshScreen.count >= GRID_MAX_POINTS;
     const float levelingProgress = sq(float(screen_data.BedMeshScreen.count) / GRID_MAX_POINTS);
-    if (levelingFinished) drawHighlightedPointValue();
+    if (levelingFinished) {
+      drawHighlightedPointValue();
+      CommandProcessor cmd;
+      cmd.font(Theme::font_medium)
+         .text(MESSAGE_POS, GET_TEXT_F(MSG_BED_MAPPING_DONE));
+    }
 
     BedMeshScreen::drawMesh(INSET_POS(MESH_POS), ExtUI::getMeshArray(),
       USE_POINTS | USE_HIGHLIGHT | USE_AUTOSCALE | (levelingFinished ? USE_COLORS : 0),
@@ -298,4 +314,4 @@ void BedMeshScreen::onMeshUpdate(const int8_t x, const int8_t y, const ExtUI::pr
   BedMeshScreen::onMeshUpdate(x, y, 0);
 }
 
-#endif // TOUCH_UI_FTDI_EVE
+#endif // TOUCH_UI_FTDI_EVE && HAS_MESH

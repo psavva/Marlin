@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #pragma once
@@ -31,12 +31,6 @@
 
 #define BOARD_INFO_NAME   "TH3D EZBoard"
 #define BOARD_WEBSITE_URL "th3dstudio.com"
-
-//
-// EEPROM
-//
-#define FLASH_EEPROM_EMULATION
-//#define SDCARD_EEPROM_EMULATION
 
 //
 // Servos
@@ -95,7 +89,7 @@
   #define E0_SERIAL_RX_PIN                 P0_21
 
   // Reduce baud rate to improve software serial reliability
-  #define TMC_BAUD_RATE 19200
+  #define TMC_BAUD_RATE                    19200
 #endif
 
 //
