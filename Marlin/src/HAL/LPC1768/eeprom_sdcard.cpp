@@ -17,7 +17,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #ifdef TARGET_LPC1768
@@ -38,7 +38,10 @@ FATFS fat_fs;
 FIL eeprom_file;
 bool eeprom_file_open = false;
 
-size_t PersistentStore::capacity() { return 4096; } // 4KiB of Emulated EEPROM
+#ifndef MARLIN_EEPROM_SIZE
+  #define MARLIN_EEPROM_SIZE size_t(0x1000) // 4KiB of Emulated EEPROM
+#endif
+size_t PersistentStore::capacity() { return MARLIN_EEPROM_SIZE; }
 
 bool PersistentStore::access_start() {
   const char eeprom_erase_value = 0xFF;

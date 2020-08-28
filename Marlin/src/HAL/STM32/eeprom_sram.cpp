@@ -17,7 +17,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #if defined(ARDUINO_ARCH_STM32) && !defined(STM32GENERIC)
@@ -29,7 +29,11 @@
 #include "../shared/eeprom_if.h"
 #include "../shared/eeprom_api.h"
 
-size_t PersistentStore::capacity()    { return 4096; } // 4K of SRAM
+#ifndef MARLIN_EEPROM_SIZE
+  #define MARLIN_EEPROM_SIZE 0x1000 // 4KB
+#endif
+size_t PersistentStore::capacity()    { return MARLIN_EEPROM_SIZE; }
+
 bool PersistentStore::access_start()  { return true; }
 bool PersistentStore::access_finish() { return true; }
 

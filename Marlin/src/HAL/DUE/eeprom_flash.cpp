@@ -17,7 +17,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #ifdef ARDUINO_ARCH_SAM
@@ -25,10 +25,6 @@
 #include "../../inc/MarlinConfig.h"
 
 #if ENABLED(FLASH_EEPROM_EMULATION)
-
-#ifndef E2END
-  #define E2END 0xFFF // Default to Flash emulated EEPROM size (eeprom_emul.cpp)
-#endif
 
 /* EEPROM emulation over flash with reduced wear
  *
@@ -973,7 +969,10 @@ static void ee_Init() {
 
 #include "../shared/eeprom_api.h"
 
-size_t PersistentStore::capacity()    { return E2END + 1; }
+#ifndef MARLIN_EEPROM_SIZE
+  #define MARLIN_EEPROM_SIZE 0x1000 // 4KB
+#endif
+size_t PersistentStore::capacity()    { return MARLIN_EEPROM_SIZE; }
 bool PersistentStore::access_start()  { ee_Init();  return true; }
 bool PersistentStore::access_finish() { ee_Flush(); return true; }
 
@@ -994,7 +993,7 @@ bool PersistentStore::write_data(int &pos, const uint8_t *value, size_t size, ui
     crc16(crc, &v, 1);
     pos++;
     value++;
-  };
+  }
   return false;
 }
 
