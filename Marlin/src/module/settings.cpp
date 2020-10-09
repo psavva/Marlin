@@ -33,7 +33,6 @@
  * ALSO: Variables in the Store and Retrieve sections must be in the same order.
  *       If a feature is disabled, some data must still be written that, when read,
  *       either sets a Sane Default, or results in No Change to the existing value.
- *
  */
 
 // Change EEPROM version if the structure changes
@@ -1804,10 +1803,11 @@ void MarlinSettings::postprocess() {
       //
       {
         _FIELD_TEST(lcd_contrast);
-
         int16_t lcd_contrast;
         EEPROM_READ(lcd_contrast);
-        TERN_(HAS_LCD_CONTRAST, ui.set_contrast(lcd_contrast));
+        if (!validating) {
+          TERN_(HAS_LCD_CONTRAST, ui.set_contrast(lcd_contrast));
+        }
       }
 
       //

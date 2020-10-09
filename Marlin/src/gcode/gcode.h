@@ -285,11 +285,11 @@
  * M995 - Touch screen calibration for TFT display
  * M997 - Perform in-application firmware update
  * M999 - Restart after being stopped by error
+ * D... - Custom Development G-code. Add hooks to 'gcode_D.cpp' for developers to test features. (Requires MARLIN_DEV_MODE)
  *
  * "T" Codes
  *
  * T0-T3 - Select an extruder (tool) by index: "T<n> F<units/min>"
- *
  */
 
 #include "../inc/MarlinConfig.h"
@@ -297,6 +297,10 @@
 
 #if ENABLED(I2C_POSITION_ENCODERS)
   #include "../feature/encoder_i2c.h"
+#endif
+
+#if IS_SCARA || defined(G0_FEEDRATE)
+  #define HAS_FAST_MOVES 1
 #endif
 
 enum AxisRelative : uint8_t { REL_X, REL_Y, REL_Z, REL_E, E_MODE_ABS, E_MODE_REL };
@@ -405,11 +409,9 @@ public:
 
 private:
 
-  static void G0_G1(
-    #if IS_SCARA || defined(G0_FEEDRATE)
-      const bool fast_move=false
-    #endif
-  );
+  TERN_(MARLIN_DEV_MODE, static void D(const int16_t dcode));
+
+  static void G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move=false));
 
   TERN_(ARC_SUPPORT, static void G2_G3(const bool clockwise));
 
@@ -883,7 +885,7 @@ private:
 
   TERN_(CONTROLLER_FAN_EDITABLE, static void M710());
 
-  static void T(const uint8_t tool_index);
+  static void T(const int8_t tool_index);
 
 };
 
