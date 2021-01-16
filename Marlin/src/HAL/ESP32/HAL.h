@@ -90,6 +90,13 @@ extern uint16_t HAL_adc_result;
 // Public functions
 // ------------------------
 
+//
+// Tone
+//
+void toneInit();
+void tone(const pin_t _pin, const unsigned int frequency, const unsigned long duration=0);
+void noTone(const pin_t _pin);
+
 // clear reset reason
 void HAL_clear_reset_source();
 
@@ -100,10 +107,16 @@ inline void HAL_reboot() {}  // reboot the board or restart the bootloader
 
 void _delay_ms(int delay);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
+#if GCC_VERSION <= 50000
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 int freeMemory();
-#pragma GCC diagnostic pop
+
+#if GCC_VERSION <= 50000
+  #pragma GCC diagnostic pop
+#endif
 
 void analogWrite(pin_t pin, int value);
 
@@ -157,14 +170,14 @@ FORCE_INLINE static void DELAY_CYCLES(uint32_t x) {
 
   if (stop >= start) {
     // no overflow, so only loop while in between start and stop:
-    // 0x00000000 -----------------start****stop-- 0xffffffff
+    // 0x00000000 -----------------start****stop-- 0xFFFFFFFF
     while (ccount >= start && ccount < stop) {
       __asm__ __volatile__ ( "rsr     %0, ccount" : "=a" (ccount) );
     }
   }
   else {
     // stop did overflow, so only loop while outside of stop and start:
-    // 0x00000000 **stop-------------------start** 0xffffffff
+    // 0x00000000 **stop-------------------start** 0xFFFFFFFF
     while (ccount >= start || ccount < stop) {
       __asm__ __volatile__ ( "rsr     %0, ccount" : "=a" (ccount) );
     }
