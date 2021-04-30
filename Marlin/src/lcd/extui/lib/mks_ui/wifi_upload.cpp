@@ -39,9 +39,9 @@ extern SZ_USART_FIFO  WifiRxFifo;
 
 extern int readUsartFifo(SZ_USART_FIFO *fifo, int8_t *buf, int32_t len);
 extern int writeUsartFifo(SZ_USART_FIFO * fifo, int8_t * buf, int32_t len);
-extern void esp_port_begin(uint8_t interrupt);
+void esp_port_begin(uint8_t interrupt);
 extern int usartFifoAvailable(SZ_USART_FIFO *fifo);
-extern void wifi_delay(int n);
+void wifi_delay(int n);
 
 #define ARRAY_SIZE(a) sizeof(a) / sizeof((a)[0])
 
@@ -152,7 +152,7 @@ uint32_t getData(unsigned byteCnt, const uint8_t *buf, int ofst) {
   uint32_t val = 0;
   if (buf && byteCnt) {
     unsigned int shiftCnt = 0;
-    NOMORE(byteCnt, 4);
+    NOMORE(byteCnt, 4U);
     do {
       val |= (uint32_t)buf[ofst++] << shiftCnt;
       shiftCnt += 8;
@@ -164,7 +164,7 @@ uint32_t getData(unsigned byteCnt, const uint8_t *buf, int ofst) {
 // Put 1-4 bytes of a value in little-endian order into a buffer beginning at a specified offset.
 void putData(uint32_t val, unsigned byteCnt, uint8_t *buf, int ofst) {
   if (buf && byteCnt) {
-    NOMORE(byteCnt, 4);
+    NOMORE(byteCnt, 4U);
     do {
       buf[ofst++] = (uint8_t)(val & 0xFF);
       val >>= 8;

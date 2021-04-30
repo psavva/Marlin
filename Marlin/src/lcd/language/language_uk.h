@@ -151,7 +151,7 @@ namespace Language_uk {
   PROGMEM Language_Str MSG_MESH_X                          = _UxGT("Індекс X");
   PROGMEM Language_Str MSG_MESH_Y                          = _UxGT("Індекс Y");
   PROGMEM Language_Str MSG_MESH_EDIT_Z                     = _UxGT("Значення Z");
-  PROGMEM Language_Str MSG_USER_MENU                       = _UxGT("Власні команди");
+  PROGMEM Language_Str MSG_CUSTOM_COMMANDS                 = _UxGT("Власні команди");
 
   PROGMEM Language_Str MSG_M48_TEST                        = _UxGT("M48 тест зонду");
   PROGMEM Language_Str MSG_M48_POINT                       = _UxGT("M48 точка");
@@ -215,7 +215,7 @@ namespace Language_uk {
   PROGMEM Language_Str MSG_UBL_MESH_HEIGHT_AMOUNT          = _UxGT("Висота");
   PROGMEM Language_Str MSG_UBL_VALIDATE_MESH_MENU          = _UxGT("Підтвердити сітку");
   PROGMEM Language_Str MSG_UBL_VALIDATE_CUSTOM_MESH        = _UxGT("Підтвердити свою");
-  
+
   PROGMEM Language_Str MSG_G26_HEATING_BED                 = _UxGT("G26 нагрів столу");
   PROGMEM Language_Str MSG_G26_HEATING_NOZZLE              = _UxGT("G26 нагрів сопла");
   PROGMEM Language_Str MSG_G26_MANUAL_PRIME                = _UxGT("Ручне грунтування");
@@ -714,7 +714,7 @@ namespace Language_uk {
   PROGMEM Language_Str MSG_CYCLE_MIX                       = _UxGT("Циклічне змішування");
   PROGMEM Language_Str MSG_GRADIENT_MIX                    = _UxGT("Градієнт змішування");
   PROGMEM Language_Str MSG_REVERSE_GRADIENT                = _UxGT("Змінити градієнт");
-  
+
   #if LCD_WIDTH > 21
     PROGMEM Language_Str MSG_ACTIVE_VTOOL                  = _UxGT("Активація В-інструменту");
     PROGMEM Language_Str MSG_GRADIENT_ALIAS                = _UxGT("Псевдонім В-інструменту");
@@ -728,7 +728,7 @@ namespace Language_uk {
   PROGMEM Language_Str MSG_END_VTOOL                       = _UxGT("Кінець В-інструменту");
   PROGMEM Language_Str MSG_COMMIT_VTOOL                    = _UxGT("Змішати В-інструменти");
   PROGMEM Language_Str MSG_VTOOLS_RESET                    = _UxGT("В-інструменти зкинуті");
-  
+
   PROGMEM Language_Str MSG_START_Z                         = _UxGT("Початок Z:");
   PROGMEM Language_Str MSG_END_Z                           = _UxGT(" Кінець Z:");
 

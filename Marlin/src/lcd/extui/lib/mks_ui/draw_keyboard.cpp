@@ -27,6 +27,7 @@
 #include <lv_conf.h>
 
 #include "../../../../inc/MarlinConfig.h"
+#include "../../../../gcode/queue.h"
 
 extern lv_group_t *g;
 static lv_obj_t *scr;
@@ -136,7 +137,7 @@ static void lv_kb_event_cb(lv_obj_t *kb, lv_event_t event) {
 
             gCfgItems.wifi_mode_sel = STA_MODEL;
 
-            package_to_wifi(WIFI_PARA_SET, (uint8_t *)0, 0);
+            package_to_wifi(WIFI_PARA_SET, nullptr, 0);
 
             public_buf_l[0] = 0xA5;
             public_buf_l[1] = 0x09;
@@ -147,18 +148,27 @@ static void lv_kb_event_cb(lv_obj_t *kb, lv_event_t event) {
             public_buf_l[6] = 0x00;
             raw_send_to_wifi((uint8_t*)public_buf_l, 6);
 
-            last_disp_state = KEY_BOARD_UI;
+            last_disp_state = KEYBOARD_UI;
             lv_clear_keyboard();
             wifi_tips_type = TIPS_TYPE_JOINING;
             lv_draw_wifi_tips();
             break;
         #endif // MKS_WIFI_MODULE
-        case gcodeCommand:
+        case autoLevelGcodeCommand:
           uint8_t buf[100];
           strncpy((char *)buf,ret_ta_txt,sizeof(buf));
           update_gcode_command(AUTO_LEVELING_COMMAND_ADDR,buf);
           lv_clear_keyboard();
           draw_return_ui();
+          break;
+        case GCodeCommand:
+          if (!queue.ring_buffer.full(3)) {
+            // Hook anything that goes to the serial port
+            MYSERIAL1.setHook(lv_serial_capt_hook, lv_eom_hook, 0);
+            queue.enqueue_one_now(ret_ta_txt);
+          }
+          lv_clear_keyboard();
+          // draw_return_ui is called in the end of message hook
           break;
         default: break;
       }
@@ -206,7 +216,7 @@ static void lv_kb_event_cb(lv_obj_t *kb, lv_event_t event) {
 }
 
 void lv_draw_keyboard() {
-  scr = lv_screen_create(KEY_BOARD_UI, "");
+  scr = lv_screen_create(KEYBOARD_UI, "");
 
   // Create styles for the keyboard
   static lv_style_t rel_style, pr_style;
@@ -238,12 +248,18 @@ void lv_draw_keyboard() {
   // Create a text area. The keyboard will write here
   lv_obj_t *ta = lv_ta_create(scr, nullptr);
   lv_obj_align(ta, nullptr, LV_ALIGN_IN_TOP_MID, 0, 10);
-  if (keyboard_value == gcodeCommand) {
+  switch (keyboard_value) {
+    case autoLevelGcodeCommand:
     get_gcode_command(AUTO_LEVELING_COMMAND_ADDR,(uint8_t *)public_buf_m);
     public_buf_m[sizeof(public_buf_m)-1] = 0;
     lv_ta_set_text(ta, public_buf_m);
-  }
-  else {
+      break;
+    case GCodeCommand:
+      // Start with uppercase by default
+      lv_btnm_set_map(kb, kb_map_uc);
+      lv_btnm_set_ctrl_map(kb, kb_ctrl_uc_map);
+      // Fallthrough
+    default:
     lv_ta_set_text(ta, "");
   }
 
